@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -63,7 +64,7 @@ func main() {
 	r.Use(middleware.Heartbeat("/"))
 
 	r.Post("/task", func(w http.ResponseWriter, r *http.Request) {
-		body, err := hapi.ParseWebhookBody(r.Body)
+		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -73,7 +74,7 @@ func main() {
 		w.WriteHeader(200)
 	})
 	r.Post("/chat", func(w http.ResponseWriter, r *http.Request) {
-		body, err := hapi.ParseWebhookBody(r.Body)
+		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -83,7 +84,7 @@ func main() {
 		w.WriteHeader(200)
 	})
 	r.Post("/user", func(w http.ResponseWriter, r *http.Request) {
-		body, err := hapi.ParseWebhookBody(r.Body)
+		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -93,7 +94,7 @@ func main() {
 		w.WriteHeader(200)
 	})
 	r.Post("/quest", func(w http.ResponseWriter, r *http.Request) {
-		body, err := hapi.ParseWebhookBody(r.Body)
+		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println(err)
 		} else {

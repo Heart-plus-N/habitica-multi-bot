@@ -11,7 +11,7 @@ type QuestQueue struct {
 	interest ActivityType
 }
 
-func (q QuestQueue) Initiate(at ActivityType, body interface{}) {
+func (q QuestQueue) Initiate(at ActivityType, body []byte) {
 	log.Println(q.Name)
 }
 

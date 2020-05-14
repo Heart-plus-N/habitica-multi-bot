@@ -10,6 +10,6 @@ const (
 )
 
 type Observer interface {
-	Initiate(ActivityType, interface{})
+	Initiate(ActivityType, []byte)
 	GetInterest() ActivityType
 }

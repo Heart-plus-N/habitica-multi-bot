@@ -22,8 +22,10 @@ func main() {
 	// Load variable from config
 	viper.SetDefault("PORT", ":8080")
 	if os.Getenv("ENV") == "PROD" {
+		log.Println("Loading environment variables")
 		viper.AutomaticEnv()
 	} else {
+		log.Println("Loading config file")
 		viper.SetConfigName("config")
 		viper.SetConfigType("toml")
 		viper.AddConfigPath(".")

@@ -33,6 +33,11 @@ func main() {
 		viper.ReadInConfig()
 	}
 
+	port := ":" + viper.GetString("PORT")
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+
 	hapi := NewHabiticaAPI(nil, "", nil)
 	_, err := hapi.Authenticate(viper.GetString("HABITICA_USERNAME"), viper.GetString("HABITICA_PASSWORD"))
 	if err != nil {
@@ -103,8 +108,7 @@ func main() {
 		w.WriteHeader(200)
 	})
 
-	host := viper.GetString("PORT")
-	log.Println("Listening on", host)
-	err = http.ListenAndServe(host, r)
+	log.Println("Listening on", port)
+	err = http.ListenAndServe(port, r)
 	log.Fatal(err)
 }

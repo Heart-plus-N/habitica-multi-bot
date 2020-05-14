@@ -6,8 +6,8 @@ import (
 
 	"os"
 
-	op "github.com/Heart-plus-N/habitica-quest-queue-notifier/observer_pattern"
-	qq "github.com/Heart-plus-N/habitica-quest-queue-notifier/quest_queue"
+	op "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
+	qq "github.com/Heart-plus-N/habitica-multi-bot/quest_queue"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"

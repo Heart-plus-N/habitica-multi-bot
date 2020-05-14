@@ -3,7 +3,7 @@ package quest_queue
 import (
 	"log"
 
-	. "github.com/Heart-plus-N/habitica-quest-queue-notifier/observer_pattern"
+	. "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
 )
 
 type QuestQueue struct {

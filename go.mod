@@ -1,4 +1,4 @@
-module github.com/Heart-plus-N/habitica-quest-queue-notifier
+module github.com/Heart-plus-N/habitica-multi-bot
 
 go 1.14
 

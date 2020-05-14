@@ -9,36 +9,28 @@ import (
 
 	op "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
 	qq "github.com/Heart-plus-N/habitica-multi-bot/quest_queue"
+	"github.com/spf13/viper"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/goware/httplog"
-	"github.com/jinzhu/configor"
 	. "gitlab.com/bfcarpio/gabit"
 )
 
-var Config = struct {
-	Habitica struct {
-		Username string `required:"true"`
-		Password string `required:"true"`
-	}
-}{}
-
-func determineListenAddress() (string, error) {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	return ":" + port, nil
-}
-
 func main() {
 	// Load variable from config
-	configor.Load(&Config, "config.toml")
+	viper.SetDefault("PORT", ":8080")
+	if os.Getenv("ENV") == "PROD" {
+		viper.AutomaticEnv()
+	} else {
+		viper.SetConfigName("config")
+		viper.SetConfigType("toml")
+		viper.AddConfigPath(".")
+		viper.ReadInConfig()
+	}
 
-	//
 	hapi := NewHabiticaAPI(nil, "", nil)
-	_, err := hapi.Authenticate(Config.Habitica.Username, Config.Habitica.Password)
+	_, err := hapi.Authenticate(viper.GetString("HABITICA_USERNAME"), viper.GetString("HABITICA_PASSWORD"))
 	if err != nil {
 		log.Fatalln("Could not log into Habitica")
 		log.Fatalln(err)
@@ -104,10 +96,7 @@ func main() {
 		w.WriteHeader(200)
 	})
 
-	host, err := determineListenAddress()
-	if err != nil {
-		log.Fatal(err)
-	}
+	host := viper.GetString("PORT")
 	log.Println("Listening on", host)
 	err = http.ListenAndServe(host, r)
 	log.Fatal(err)

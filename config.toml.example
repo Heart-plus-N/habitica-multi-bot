@@ -1,3 +1,2 @@
-[Habitica]
-username = "USERNAME"
-password = "PASSWORD"
+HABITICA_USERNAME = "USERNAME"
+HABITICA_PASSWORD = "PASSWORD"

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"os"
 
@@ -12,7 +14,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 	"github.com/goware/httplog"
 	. "gitlab.com/bfcarpio/gabit"
 )
@@ -53,7 +54,10 @@ func main() {
 	})
 
 	r.Use(httplog.RequestLogger(logger))
-	r.Use(middleware.Heartbeat("/"))
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Bot up as of: %s", time.Now().String())
+	})
 
 	r.Post("/task", func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)

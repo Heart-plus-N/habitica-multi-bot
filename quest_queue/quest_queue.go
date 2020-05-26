@@ -11,7 +11,7 @@ type QuestQueue struct {
 	interest ActivityType
 }
 
-func (q QuestQueue) Initiate(at ActivityType, body []byte) {
+func (q QuestQueue) Initiate(at ActivityType, body []byte, sc SharedConfig) {
 	log.Println(q.Name)
 }
 

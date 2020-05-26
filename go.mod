@@ -2,12 +2,12 @@ module github.com/Heart-plus-N/habitica-multi-bot
 
 go 1.14
 
+// replace gitlab.com/bfcarpio/gabit => ../gabit
+
 require (
+	github.com/buger/jsonparser v1.0.0
 	github.com/go-chi/chi v4.1.1+incompatible
-	github.com/goware/httplog v0.1.5
-	github.com/jinzhu/configor v1.2.0
-	github.com/rs/zerolog v1.18.0 // indirect
 	github.com/spf13/viper v1.7.0
-	gitlab.com/bfcarpio/gabit v0.0.0-20200510172847-772a7996d5f9
+	gitlab.com/bfcarpio/gabit v0.0.0-20200526225756-945516a4177c
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

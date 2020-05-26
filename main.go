@@ -9,6 +9,7 @@ import (
 
 	"os"
 
+	bot "github.com/Heart-plus-N/habitica-multi-bot/bot"
 	op "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
 	qq "github.com/Heart-plus-N/habitica-multi-bot/quest_queue"
 	"github.com/spf13/viper"
@@ -19,7 +20,7 @@ import (
 
 func main() {
 	// Load ENV or config variables
-	viper.SetDefault("PORT", ":8080")
+	viper.SetDefault("PORT", "8080")
 	if os.Getenv("ENV") == "PROD" {
 		log.Println("Loading environment variables")
 		viper.AutomaticEnv()
@@ -30,6 +31,11 @@ func main() {
 		viper.AddConfigPath(".")
 		viper.ReadInConfig()
 	}
+	var sc op.SharedConfig
+	err := viper.Unmarshal(&sc)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// Ensure we have a port
 	port := ":" + viper.GetString("PORT")
@@ -39,7 +45,7 @@ func main() {
 
 	// Connect to habitica
 	hapi := NewHabiticaAPI(nil, "", nil)
-	_, err := hapi.Authenticate(viper.GetString("HABITICA_USERNAME"), viper.GetString("HABITICA_PASSWORD"))
+	_, err = hapi.Authenticate(viper.GetString("HABITICA_USERNAME"), viper.GetString("HABITICA_PASSWORD"))
 	if err != nil {
 		log.Fatalln("Could not log into Habitica")
 		log.Fatalln(err)
@@ -47,7 +53,10 @@ func main() {
 	log.Println("Logged into Habitica")
 
 	// Set up oversevers
-	reporter := op.Reporter{}
+	reporter := op.NewReporter(sc)
+
+	bot_utils := bot.Bot{Name: "Bot Utils"}
+	reporter.Subscribe(bot_utils)
 
 	quest_queue := qq.QuestQueue{Name: "QQ"}
 	reporter.Subscribe(quest_queue)

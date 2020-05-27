@@ -19,10 +19,11 @@ func (b Bot) Initiate(at ActivityType, body []byte, sc SharedConfig) {
 	log.Println("Bot Utils")
 
 	// Get the new chat message
-	value, err := jsonparser.GetString(body, "unformattedText")
+	value, err := jsonparser.GetString(body, "chat", "unformattedText")
 	if err != nil {
-		log.Println("Couldn't parse body")
+		log.Println("Couldn't parse unformattedText")
 		log.Println(err)
+		return
 	}
 
 	// Split the message so we can use it and identify the parts of
@@ -33,14 +34,22 @@ func (b Bot) Initiate(at ActivityType, body []byte, sc SharedConfig) {
 		// Since we know it's a command we need to
 		// find a group to post the message in.
 		group, err := jsonparser.GetString(body, "group", "id")
-		log.Println(group)
+		// Find the user so we can ping them back!
+		user, err := jsonparser.GetString(body, "chat", "username")
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
-		responseMessage := fmt.Sprintf("Utility_Bot is up as of: %s", time.Now().UTC().String())
+		// Responsd in the chat with a nice message and ping the user who called on the bot
+		responseMessage := fmt.Sprintf("@%s Utility_Bot is up as of: %s", user, time.Now().UTC().String())
+		// log.Println(responseMessage)
 
 		api := gabit.NewHabiticaAPI(nil, "", nil)
 		_, err = api.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 		_, err = api.PostMessage(group, responseMessage)
 		if err != nil {

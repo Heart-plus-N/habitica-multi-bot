@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -28,14 +29,20 @@ func (b Bot) Initiate(at ActivityType, body []byte, sc SharedConfig) {
 	// a command.
 	valueSplit := strings.Fields(value)
 
-	if valueSplit[0] == "!ub" {
+	if valueSplit[0] == "@Utility_Bot" {
 		// Since we know it's a command we need to
 		// find a group to post the message in.
 		group, err := jsonparser.GetString(body, "group", "id")
+		log.Println(group)
+
+		responseMessage := fmt.Sprintf("Utility_Bot is up as of: %s", time.Now().UTC().String())
 
 		api := gabit.NewHabiticaAPI(nil, "", nil)
-		api.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
-		_, err = api.PostMessage(group, "Utility_Bot is up as of: "+time.Now().String())
+		_, err = api.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = api.PostMessage(group, responseMessage)
 		if err != nil {
 			log.Println(err)
 		}

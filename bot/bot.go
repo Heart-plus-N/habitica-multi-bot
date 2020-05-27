@@ -7,6 +7,10 @@ import (
 	"time"
 
 	. "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
+	// Using json parser because I know I'll
+	// only need a handful of params from the webhook.
+	// Should be faster than marshalling everyting into a struct.
+	// Also, coupling the struct definitions is brittle!
 	"github.com/buger/jsonparser"
 	"gitlab.com/bfcarpio/gabit"
 )
@@ -46,11 +50,7 @@ func (b Bot) Initiate(at ActivityType, body []byte, sc SharedConfig) {
 		// log.Println(responseMessage)
 
 		api := gabit.NewHabiticaAPI(nil, "", nil)
-		_, err = api.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
-		if err != nil {
-			log.Println(err)
-			return
-		}
+		api.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
 		_, err = api.PostMessage(group, responseMessage)
 		if err != nil {
 			log.Println(err)

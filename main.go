@@ -9,48 +9,39 @@ import (
 
 	"os"
 
+	"github.com/joho/godotenv"
+
 	bot "github.com/Heart-plus-N/habitica-multi-bot/bot"
 	op "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
 	qq "github.com/Heart-plus-N/habitica-multi-bot/quest_queue"
-	"github.com/spf13/viper"
 
 	"github.com/go-chi/chi"
 	. "gitlab.com/bfcarpio/gabit"
 )
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+}
+
 func main() {
-	// Load ENV or config variables
-	viper.SetDefault("PORT", "8080")
-	if os.Getenv("HMB_ENV") == "PROD" {
-		log.Println("Loading environment variables")
-		viper.BindEnv("PORT", "PORT")
-		viper.SetEnvPrefix("HMB")
-		viper.AutomaticEnv()
-	} else {
-		log.Println("Loading config file")
-		viper.SetConfigName("config")
-		viper.SetConfigType("toml")
-		viper.AddConfigPath(".")
-		viper.ReadInConfig()
-	}
-	var sc op.SharedConfig
-	err := viper.Unmarshal(&sc)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	log.Printf("SC: %#v", sc)
-	log.Printf("viper: %#v", viper.AllSettings())
-	log.Printf("viper getstring: %#v", viper.GetString("USERNAME"))
 
 	// Ensure we have a port
-	port := ":" + viper.GetString("PORT")
-	if port == "" {
-		log.Fatal("$PORT must be set")
+	port := ":" + os.Getenv("PORT")
+	if port == ":" {
+		log.Println("Setting port to default :8080")
+		port = ":8080"
+	}
+
+	sc := op.SharedConfig{
+		HabiticaUsername: os.Getenv("HMB_USERNAME"),
+		HabiticaPassword: os.Getenv("HMB_PASSWORD"),
 	}
 
 	// Connect to habitica
 	hapi := NewHabiticaAPI(nil, "", nil)
-	_, err = hapi.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
+	_, err := hapi.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
 	if err != nil {
 		log.Fatalln("Could not log into Habitica")
 		log.Fatalln(err)

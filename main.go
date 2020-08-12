@@ -21,7 +21,7 @@ import (
 func main() {
 	// Load ENV or config variables
 	viper.SetDefault("PORT", "8080")
-	if os.Getenv("ENV") == "PROD" {
+	if os.Getenv("HMB_ENV") == "PROD" {
 		log.Println("Loading environment variables")
 		viper.BindEnv("PORT", "PORT")
 		viper.SetEnvPrefix("HMB")
@@ -40,7 +40,7 @@ func main() {
 	}
 	log.Printf("SC: %#v", sc)
 	log.Printf("viper: %#v", viper.AllSettings())
-	log.Printf("viper: %#v", os.Getenv("HABITICA_USERNAME"))
+	log.Printf("os.env: %s", os.Getenv("HMB_USERNAME"))
 
 	// Ensure we have a port
 	port := ":" + viper.GetString("PORT")
@@ -50,7 +50,7 @@ func main() {
 
 	// Connect to habitica
 	hapi := NewHabiticaAPI(nil, "", nil)
-	_, err = hapi.Authenticate(viper.GetString("HABITICA_USERNAME"), viper.GetString("HABITICA_PASSWORD"))
+	_, err = hapi.Authenticate(viper.GetString("HMB_USERNAME"), viper.GetString("HMB_PASSWORD"))
 	if err != nil {
 		log.Fatalln("Could not log into Habitica")
 		log.Fatalln(err)

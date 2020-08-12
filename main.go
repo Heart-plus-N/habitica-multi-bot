@@ -36,7 +36,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println(sc)
+	log.Printf("SC: %#v", sc)
+	log.Printf("viper: %#v", viper.AllSettings())
 
 	// Ensure we have a port
 	port := ":" + viper.GetString("PORT")

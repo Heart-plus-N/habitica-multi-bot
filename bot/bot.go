@@ -52,13 +52,6 @@ func (b Bot) Initiate(at ActivityType, body []byte, sc SharedConfig) {
 		api := gabit.NewHabiticaAPI(nil, "", nil)
 		api.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
 
-		var u map[string]interface{}
-		err = api.Get("/user", &u)
-		if err != nil {
-			log.Println(err)
-		}
-		log.Printf("%#v", u)
-
 		_, err = api.PostMessage(group, responseMessage)
 		if err != nil {
 			log.Println(err)

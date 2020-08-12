@@ -38,6 +38,7 @@ func main() {
 	}
 	log.Printf("SC: %#v", sc)
 	log.Printf("viper: %#v", viper.AllSettings())
+	log.Printf("viper: %#v", os.Getenv("HABITICA_USERNAME"))
 
 	// Ensure we have a port
 	port := ":" + viper.GetString("PORT")

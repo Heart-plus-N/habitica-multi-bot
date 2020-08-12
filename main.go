@@ -40,7 +40,7 @@ func main() {
 	}
 	log.Printf("SC: %#v", sc)
 	log.Printf("viper: %#v", viper.AllSettings())
-	log.Printf("os.env: %s", os.Getenv("HMB_USERNAME"))
+	log.Printf("viper getstring: %#v", viper.GetString("USERNAME"))
 
 	// Ensure we have a port
 	port := ":" + viper.GetString("PORT")
@@ -50,7 +50,7 @@ func main() {
 
 	// Connect to habitica
 	hapi := NewHabiticaAPI(nil, "", nil)
-	_, err = hapi.Authenticate(viper.GetString("HMB_USERNAME"), viper.GetString("HMB_PASSWORD"))
+	_, err = hapi.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
 	if err != nil {
 		log.Fatalln("Could not log into Habitica")
 		log.Fatalln(err)

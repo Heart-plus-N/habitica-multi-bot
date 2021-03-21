@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	bot "github.com/Heart-plus-N/habitica-multi-bot/bot"
 	op "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
 	qq "github.com/Heart-plus-N/habitica-multi-bot/quest_queue"
+	log "github.com/amoghe/distillog"
 
 	"github.com/go-chi/chi"
 	. "gitlab.com/bfcarpio/gabit"
@@ -21,7 +21,7 @@ import (
 
 func init() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		log.Infoln("No .env file found")
 	}
 }
 
@@ -30,7 +30,7 @@ func main() {
 	// Ensure we have a port
 	port := ":" + os.Getenv("PORT")
 	if port == ":" {
-		log.Println("Setting port to default :8080")
+		log.Infoln("Setting port to default :8080")
 		port = ":8080"
 	}
 
@@ -43,10 +43,10 @@ func main() {
 	hapi := NewHabiticaAPI(nil, "", nil)
 	_, err := hapi.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
 	if err != nil {
-		log.Fatalln("Could not log into Habitica")
-		log.Fatalln(err)
+		log.Errorln("Could not log into Habitica: ", err)
+		panic(err)
 	}
-	log.Println("Logged into Habitica")
+	log.Infoln("Logged into Habitica")
 
 	// Set up oversevers
 	reporter := op.NewReporter(sc)
@@ -68,7 +68,7 @@ func main() {
 	r.Post("/task", func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Println(err)
+			log.Errorln(err)
 		} else {
 			go reporter.Notify(op.TaskEvent, body)
 		}
@@ -78,7 +78,7 @@ func main() {
 	r.Post("/chat", func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Println(err)
+			log.Errorln(err)
 		} else {
 			go reporter.Notify(op.GroupChatEvent, body)
 		}
@@ -88,7 +88,7 @@ func main() {
 	r.Post("/user", func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Println(err)
+			log.Errorln(err)
 		} else {
 			go reporter.Notify(op.UserEvent, body)
 		}
@@ -98,7 +98,7 @@ func main() {
 	r.Post("/quest", func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Println(err)
+			log.Errorln(err)
 		} else {
 			go reporter.Notify(op.QuestEvent, body)
 		}
@@ -106,7 +106,7 @@ func main() {
 		w.WriteHeader(200)
 	})
 
-	log.Println("Listening on", port)
+	log.Infoln("Listening on", port)
 	err = http.ListenAndServe(port, r)
-	log.Fatal(err)
+	log.Errorln(err)
 }

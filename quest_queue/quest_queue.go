@@ -1,7 +1,7 @@
 package quest_queue
 
 import (
-	"log"
+	log "github.com/amoghe/distillog"
 
 	. "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
 )
@@ -12,7 +12,7 @@ type QuestQueue struct {
 }
 
 func (q QuestQueue) Initiate(at ActivityType, body []byte, sc SharedConfig) {
-	log.Println(q.Name)
+	log.Debugln(q.Name)
 }
 
 func (q QuestQueue) GetInterest() ActivityType {

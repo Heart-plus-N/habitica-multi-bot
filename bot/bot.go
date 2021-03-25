@@ -1,65 +1,54 @@
 package bot
 
 import (
-	"fmt"
-	"log"
-	"strings"
-	"time"
+	"database/sql"
 
-	. "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
-	// Using json parser because I know I'll
-	// only need a handful of params from the webhook.
-	// Should be faster than marshalling everyting into a struct.
-	// Also, coupling the struct definitions is brittle!
-	"github.com/buger/jsonparser"
-	"gitlab.com/bfcarpio/gabit"
+	. "gitlab.com/bfcarpio/gabit"
 )
 
-type Bot struct {
-	Name string
+// Used with "Interests"
+type EventType uint8
+
+const (
+	AllEvents EventType = 255
+
+	// Unused Event ActivityType = 128
+	// Unused Event ActivityType = 64
+	// Unused Event ActivityType = 32
+	// Unused Event ActivityType = 16
+
+	TaskEvent      EventType = 8
+	GroupChatEvent EventType = 4
+	UserEvent      EventType = 2
+	QuestEvent     EventType = 1
+	NoEvents       EventType = 0
+)
+
+type BotFactory interface {
+	NewBot(SharedConfig, interface{}) Bot
 }
 
-func (b Bot) Initiate(at ActivityType, body []byte, sc SharedConfig) {
-	log.Println("Bot Utils")
-
-	// Get the new chat message
-	value, err := jsonparser.GetString(body, "chat", "unformattedText")
-	if err != nil {
-		log.Println("Couldn't parse unformattedText")
-		log.Println(err)
-		return
-	}
-
-	// Split the message so we can use it and identify the parts of
-	// a command.
-	valueSplit := strings.Fields(value)
-
-	if valueSplit[0] == "@Utility_Bot" {
-		// Since we know it's a command we need to
-		// find a group to post the message in.
-		group, err := jsonparser.GetString(body, "group", "id")
-		// Find the user so we can ping them back!
-		user, err := jsonparser.GetString(body, "chat", "username")
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		// Responsd in the chat with a nice message and ping the user who called on the bot
-		responseMessage := fmt.Sprintf("@%s Utility_Bot is up as of: %s", user, time.Now().UTC().String())
-		// log.Println(responseMessage)
-
-		api := gabit.NewHabiticaAPI(nil, "", nil)
-		api.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
-
-		_, err = api.PostMessage(group, responseMessage)
-		if err != nil {
-			log.Println(err)
-		}
-	}
-
+type Bot interface {
+	// Bots should return an EventType of what
+	// they are able and willing to process.
+	GetInterest() EventType
+	// Gets called when a matching activity type is received.
+	Execute(Webhook)
 }
 
-func (b Bot) GetInterest() ActivityType {
-	return GroupChatEvent
+// Pass in all EventTypes that a bot is interested in to create
+// an aggregate EventType.
+func BuildInterest(es ...EventType) EventType {
+	var acc uint8
+	acc = 0
+	for _, e := range es {
+		acc = acc + uint8(e)
+	}
+	return EventType(acc)
+}
+
+type SharedConfig struct {
+	AccountUsername string
+	Api             *HabiticaAPI
+	Db              *sql.DB `mapstructure:"Db"`
 }

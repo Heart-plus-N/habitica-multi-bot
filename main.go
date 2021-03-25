@@ -1,67 +1,75 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
-	"os"
-
-	"github.com/joho/godotenv"
-
-	bot "github.com/Heart-plus-N/habitica-multi-bot/bot"
-	op "github.com/Heart-plus-N/habitica-multi-bot/observer_pattern"
-	qq "github.com/Heart-plus-N/habitica-multi-bot/quest_queue"
+	. "github.com/Heart-plus-N/habitica-multi-bot/bot"
 	log "github.com/amoghe/distillog"
-
 	"github.com/go-chi/chi"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	. "gitlab.com/bfcarpio/gabit"
 )
 
 func init() {
 	if err := godotenv.Load(); err != nil {
-		log.Infoln("No .env file found")
+		log.Warningln("No .env file found")
 	}
 }
 
 func main() {
-
 	// Ensure we have a port
-	port := ":" + os.Getenv("PORT")
-	if port == ":" {
+	portNum := os.Getenv("PORT")
+	if portNum == "" {
 		log.Infoln("Setting port to default :8080")
-		port = ":8080"
+		portNum = "8080"
 	}
+	portStr := ":" + portNum
 
-	sc := op.SharedConfig{
-		HabiticaUsername: os.Getenv("HMB_USERNAME"),
-		HabiticaPassword: os.Getenv("HMB_PASSWORD"),
+	databaseUrl := os.Getenv("DATABASE_URL")
+	if databaseUrl == "" {
+		databaseUrl = fmt.Sprintf(
+			"%s:%s@tcp(%s)/%s",
+			os.Getenv("HMB_USERNAME"),
+			os.Getenv("HMB_PASSWORD"),
+			os.Getenv("HMB_DB_HOST"),
+			os.Getenv("HMB_DB_NAME"),
+		)
 	}
+	connConfig, _ := pgx.ParseConfig(databaseUrl)
+	connStr := stdlib.RegisterConnConfig(connConfig)
+	db, dbErr := sql.Open("pgx", connStr)
+	if dbErr != nil {
+		panic(dbErr)
+	}
+	defer db.Close()
+
+	habiticaUsername := os.Getenv("HMB_USERNAME")
+	habiticaPassword := os.Getenv("HMB_PASSWORD")
 
 	// Connect to habitica
 	hapi := NewHabiticaAPI(nil, "", nil)
-	_, err := hapi.Authenticate(sc.HabiticaUsername, sc.HabiticaPassword)
-	if err != nil {
-		log.Errorln("Could not log into Habitica: ", err)
-		panic(err)
+	_, authErr := hapi.Authenticate(habiticaUsername, habiticaPassword)
+	if authErr != nil {
+		panic(authErr)
 	}
-	log.Infoln("Logged into Habitica")
+	log.Infoln("Logged into Habitica as: ", habiticaUsername)
 
-	// Set up oversevers
-	reporter := op.NewReporter(sc)
-
-	bot_utils := bot.Bot{Name: "Bot Utils"}
-	reporter.Subscribe(bot_utils)
-
-	quest_queue := qq.QuestQueue{Name: "QQ"}
-	reporter.Subscribe(quest_queue)
-
-	quest_queue_2 := qq.QuestQueue{Name: "QQ2"}
-	reporter.Subscribe(quest_queue_2)
+	sc := SharedConfig{
+		Api: hapi,
+		Db:  db,
+	}
 
 	// Open routes
 	r := chi.NewRouter()
+	r.Handle("/metrics", promhttp.Handler())
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Bot up as of: %s", time.Now().String())
 	})
@@ -106,7 +114,7 @@ func main() {
 		w.WriteHeader(200)
 	})
 
-	log.Infoln("Listening on", port)
-	err = http.ListenAndServe(port, r)
-	log.Errorln(err)
+	log.Infoln("Listening on", portStr)
+	serverErr := http.ListenAndServe(portStr, r)
+	log.Errorln(serverErr)
 }
